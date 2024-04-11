@@ -1,4 +1,4 @@
-def ceasar_cipher(string, shift_factor)
+def ceasar_cipher(string = "", shift_factor = 0)
   alphabet = "abcdefghijklmnopqrstuvwxyz"
   string_arr = string.split(//)
   crypted_arr = string_arr.map do |letter|
