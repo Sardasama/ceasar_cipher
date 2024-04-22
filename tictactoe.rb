@@ -26,14 +26,14 @@ class Board
   end 
 
   # Controls the player's move
-  def check_input(move)
+  def valid_move?(row, column)
     # Controls if the coordinates are valid
-    if move[0].to_i > 3 || move[0].to_i < 1 || move[1].to_i > 3 || move[1].to_i < 1
-      puts "Invalid move, please enter valid coordinates (1 <= move <= 3)"
+    if !row.between?(0,2) || !column.between?(0,2) 
+      puts "Invalid move, please enter valid coordinates (row and column between 1 and 3)"
       return false 
     # Controls if the coordinates are available
-    elsif (board_state[move[0].to_i - 1][move[1].to_i - 1] == "X" || board_state[move[0].to_i - 1][move[1].to_i - 1] == "O")
-      print "Invalid move, the place #{move} is already marked with #{board_state[move[0].to_i - 1][move[1].to_i - 1]}"
+    elsif board_state[row][column] != " " 
+      print "Invalid move, the place #{move} is already marked with #{board_state[row][column]}"
       return false
     else
     # if everything is ok, returns true
@@ -42,29 +42,26 @@ class Board
   end
 
   # Updates the board after the player's move and shows the result
-  def update(move, token)
-    board_state[move[0].to_i - 1][move[1].to_i - 1] = token
+  def update(row, column, token)
+    board_state[row][column] = token
     self.show
   end
 
   def check_win(player)
     for i in 0..2 do
       #check lines
-       if (board_state[i][0] == player.token && board_state[i][1] == player.token && board_state[i][2] == player.token)
+       if board_state[i].all?{|cell| cell == player.token}
          player.is_winner = true
        end
       #check columns
-       if (board_state[0][i] == player.token && board_state[1][i] == player.token && board_state[2][i] == player.token)
+       if board_state[0][i] == player.token && board_state[1][i] == player.token && board_state[2][i] == player.token
          player.is_winner = true
-       end
-      #check both diagonals
-      if (board_state[0][0] == player.token && board_state[1][1] == player.token && board_state[2][2] == player.token)
-         player.is_winner = true
-       end
-      if (board_state[0][2] == player.token && board_state[1][1] == player.token && board_state[2][0] == player.token)
-        player.is_winner = true
        end
     end
+    #check both diagonals
+    if (board_state[0][0] == player.token && board_state[1][1] == player.token && board_state[2][2] == player.token) || (board_state[0][2] == player.token && board_state[1][1] == player.token && board_state[2][0] == player.token)
+      player.is_winner = true
+     end
     if player.is_winner
       print "#{player.name} won the game !"
     end
@@ -86,12 +83,12 @@ draw = false
 def get_player_move(board, player, nb_turn)
   validMove = false
   while validMove == false
-    puts "Turn #{nb_turn} : #{player.name} please enter your move, for instance : 1,3"
-    move = gets.chomp.split(",")
-    validMove = board.check_input(move)
+    puts "Turn #{nb_turn} : #{player.name} please enter your move : row,column (for instance : 1,3)"
+    move = gets.chomp.split(",").map{|c| c.to_i - 1}
+    validMove = board.valid_move?(move[0], move[1])
   end
   if validMove
-    board.update(move, player.token)
+    board.update(move[0], move[1], player.token)
   end
   board.check_win(player)
 end
