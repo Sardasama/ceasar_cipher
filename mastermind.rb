@@ -1,3 +1,4 @@
+
 class Game
   attr_accessor :turn
   attr_reader :colors_list, :code, :code_found
@@ -50,7 +51,7 @@ class Game
     
     while !@code_found && turn < 1200
       @turn += 1
-      puts "Turn #{turn}, try your best Computer !"
+      puts "Turn #{turn}, try your best, Computer !"
       guess = generate_guess(hints, guess)
       while guess_hash.include?(guess)
         guess = generate_guess(hints, guess)
@@ -116,9 +117,9 @@ class Game
   
   def show_rules
     puts "Welcome to my wonderful MasterMind game!"
-    puts "Do you want to play as the Code Breaker (type 1) or the Code Maker (type 2) ?"
-    role = gets.chomp.to_i
-    role == 1 ? play_as_codebreaker : play_as_codemaker
+    puts "Do you want to play as the Code Breaker (type B) or the Code Maker (type M) ?"
+    role = gets.chomp
+    role == "B" ? play_as_codebreaker : play_as_codemaker
   end
 end
 
