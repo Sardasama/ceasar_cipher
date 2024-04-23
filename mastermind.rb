@@ -1,50 +1,62 @@
-#TODO : revise hints
-
 class Game
   attr_accessor :turn
-  attr_reader :colors, :code, :codeFound
+  attr_reader :colors_list, :code, :code_found
 
   def initialize 
-    @colors = ["R", "G", "B", "Y", "W", "V"]
+    @colors_list = ["R", "G", "B", "Y", "W", "V"]
     @turn = 0
-    codeFound = false
-    #show_rules
+    @code_found = false
+    @code = Array.new(4, "")
+    show_rules
   end
   
   def generate_random_code
-    rngCode = colors.shuffle.first(4)
+    rng_code = colors_list.shuffle.first(4)
   end
 
-  def play_as_CodeBreaker
-    code = generate_random_code
-    while !codeFound && turn < 12
+  def play_as_codebreaker
+    @code = generate_random_code
+    #Rules
+    puts "A random code has been generated. It is composed of 4 unique letters, corresponding of 6 differents colors : R = red, G = green, B = blue, Y = yellow, W = white and V = violet."
+    puts "You have 12 turns to guess the code. Each guess will give you hints about how close your are from the code :"
+    puts "you will be told how many colors are at the right position, and how many are valid but misplaced."
+    
+    while !@code_found && @turn < 12
       @turn += 1
       puts "Turn #{turn} on 12 !"
-      validGuess = false
-      while validGuess == false
-        puts "Please input your guess, for instance : R,B,W,Y"
-        guess = gets.chomp.split(",")
-        validGuess = check_guess(guess)
+      valid_guess = false
+      while valid_guess == false
+        puts "Please input your guess, for instance : R,B,W,Y (or restart or exit)"        
+        input = gets.chomp
+        if input == "restart" 
+          newGame = Game.new
+        elsif input == "exit"
+          abort("Thanks for playing !")
+        else
+          valid_guess = check_guess(guess = input.split(","))
+        end  
       end
       analyze_guess(guess)      
     end
   end
 
-  def play_as_CodeMaker
+  def play_as_codemaker
+    puts "Please enter a code composed of 4 unique letters, corresponding of 6 differents colors : R = red, G = green, B = blue, Y = yellow, W = white and V = violet."
+    puts "The computer will try to guess in the less turns possible."
     @code = gets.chomp.split(",")
-    guess_arr = Array.new
-    result = Array.new
     
-    while !codeFound && turn < 1200
+    guess_hash = Hash.new
+    hints = Array.new(2, 0)
+    
+    while !@code_found && turn < 1200
       @turn += 1
       puts "Turn #{turn}, try your best Computer !"
-      guess = generate_guess(result, guess)
-      while guess_arr.include?(guess)
-        guess = generate_guess(result, guess)
+      guess = generate_guess(hints, guess)
+      while guess_hash.include?(guess)
+        guess = generate_guess(hints, guess)
       end  
-      
-      guess_arr.push(guess)
-      result = analyze_guess(guess)      
+      hints = analyze_guess(guess) 
+      guess_hash[guess] = hints
     end
     
   end
@@ -58,7 +70,7 @@ class Game
       return false
     elsif
       guess.each do |color|
-        if !colors.include?(color)
+        if !colors_list.include?(color)
           puts "#{color} is not listed in the valid colors. Please use only one of those : #{colors}"
           return false
         end
@@ -71,10 +83,14 @@ class Game
   def analyze_guess(guess)
     found = 0
     misplaced = 0
-    print "#{code} <> #{guess}"
+    print "#{guess}"
     if @code == guess
-      @codeFound = true
-      puts "You won ! You found the code ! #{guess}" if @codeFound
+      @code_found = true
+      if @code_found
+        puts "You won ! You found the code ! #{guess}"
+        puts "Wanna play again? (Y/N)"
+        Game.new if gets.chomp.upcase == "Y"
+      end
     else
       for i in 0..3
         if guess[i] == @code[i]
@@ -83,17 +99,16 @@ class Game
           misplaced +=1
         end
       end
-      puts "You found the right place for #{found} color(s) and have discovered #{misplaced} misplaced color(s)." 
-      return_arr = [found, misplaced]
-      return return_arr
+      print "You found the right place for #{found} color(s) and have discovered #{misplaced} misplaced color(s). \n" 
+      hints = [found, misplaced]
+      return 
     end
   end
 
-  def generate_guess(result, previousGuess)
-    if (result[0].to_i + result[1].to_i) == 4
-      guess = previousGuess.shuffle      
-    elsif (result[0].to_i + result[1].to_i).between?(1,3)
-      guess = previousGuess.shuffle.first(3).push(colors.shuffle[0])   
+  def generate_guess(hints, last_guess)
+    colors_pool = Array.new
+    if hints[0] + hints[1] == 4
+      guess = last_guess.shuffle
     else
       guess = generate_random_code
     end
@@ -101,13 +116,11 @@ class Game
   
   def show_rules
     puts "Welcome to my wonderful MasterMind game!"
-    puts "A random code has been generated. It is composed of 4 unique letters, corresponding of 6 differents colors : R = red, G = green, B = blue, Y = yellow, W = white and V = violet."
-    puts "You have 12 turns to guess the code. Each guess will give you hints about how close your are from the code :"
-    puts "you will be told how many colors are at the right position, and how many are valid but misplaced."
+    puts "Do you want to play as the Code Breaker (type 1) or the Code Maker (type 2) ?"
+    role = gets.chomp.to_i
+    role == 1 ? play_as_codebreaker : play_as_codemaker
   end
 end
 
 #Game
-newGame = Game.new
-#newGame.play_as_CodeBreaker
-newGame.play_as_CodeMaker
+Game.new
