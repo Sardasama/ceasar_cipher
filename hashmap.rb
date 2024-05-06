@@ -1,78 +1,91 @@
 class HashMap
   LOAD_FACTOR = 0.75
-
+  OVERLOAD_LIMIT = 2
+  
   def initialize(size = 8)
-    @buckets = Array.new(size, [])
+    @buckets = []
+    size.times {@buckets.push([])}
     @size = size
-    @load = 0
+    @load = 0.0
+    puts @buckets
   end
 
   def hash(key)
     hash_code = 0
-    prime_number = 19
+    prime_number = 31
     key.each_char { |char| hash_code = prime_number * hash_code + char.ord }
     hash_code
   end
 
   def set(key, value)
     @load += 1 unless has?(key)
-    if  @load / @size > LOAD_FACTOR
-      puts "!!!!! LOAD EXCEEDED !!!!!"
-      @buckets.concat(Array.new(@size, []))
-      @size = @size * 2
-    end
-    @buckets[get_bkt(key)] = [key, value]
+    check_load(key)
+    #puts "Buckets : #{@buckets}"
+    @buckets[get_bkt(key)] << [key, value]
+    puts "Bucket #{get_bkt(key)} : #{@buckets[get_bkt(key)]}"
   end
 
   def get(key)
-    return unless key == @buckets[get_bkt(key)][0]
-    @buckets[get_bkt(key)][1]
+    @buckets[get_bkt(key)].each { |k, v| return v if k == key }
+    nil
   end
 
   def has?(key)
-    @buckets[get_bkt(key)][0] == key
-  end
-
-  def remove(key)
-    data = get(key)
-    if data.nil?
-      nil
-    else
-      puts "TOTO"
-      @buckets[get_bkt(key)] = []
-      data
-      @load -= 1
-    end
+    @buckets[get_bkt(key)].each  { |k, v| return true if k == key }
+    false
   end
 
   def length
-    @buckets.count { |k, v| k != nil}
+    @load
   end
 
   def clear
-    @buckets.each { |_entry| entry = nil }
+    @buckets.each { |entry| entry = [] }
+  end
+
+  def remove(key)
+    return nil unless has?(key)
+    @buckets[get_bkt(key)].map! do |k, v|
+      if k == key 
+        k = nil
+        v = nil
+      end
+    end
+    @load -= 1
   end
 
   def keys
     keys_arr = []
-    @buckets.each { |entry| keys_arr << entry[0] unless entry[0].nil? }
-    keys_arr
+    @buckets.each { |bucket| bucket.each { |entry| keys_arr << entry[0] }}
+    keys_arr.compact
   end
 
   def values
     values_arr = []
-    @buckets.each { |entry| values_arr << entry[1] unless entry[1].nil? }
-    values_arr
+    @buckets.each { |bucket| bucket.each { |entry| values_arr << entry[1] }}
+    values_arr.compact
   end
 
   def entries
     entries_arr = []
-    @buckets.each { |entry| entries_arr << entry unless entry.nil? }
-    entries_arr
+    @buckets.each { |bucket| bucket.each { |entry| entries_arr << entry }}
+    entries_arr.compact
   end
 
   def get_bkt(key)
-    hash(key) % @size
+    bucket_num = hash(key) % @size
+    #puts "#{bucket_num} from #{hash(key)} and #{@size}"
+    bucket_num
+  end
+
+  def check_load (key)
+    load_level = @load / @size
+    local_load = @buckets[get_bkt(key)].count
+    if  load_level > LOAD_FACTOR || local_load >= OVERLOAD_LIMIT 
+      puts "LOAD EXCEEDED (#{load_level}, #{local_load}) => EXPANDING"
+      @size.times {@buckets.push([])}
+      @size = @size * 2
+    end
   end
 end
 
