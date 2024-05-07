@@ -22,7 +22,7 @@ class Tree
   end
 
   def build_subtree(arr)
-    puts "Entering with #{arr}"
+    #puts "Entering with #{arr}"
     mynode = Node.new
     if arr.length <= 1
       mynode = Node.new(arr[0])
@@ -137,28 +137,116 @@ class Tree
   end
 
   def level_order(&block)
-    yield @root
-    yield_recursive(@root.left, @root, &block)
-    yield_recursive(@root.right, @root, &block)
+    q = []
+    q << @root
+    while q.length > 0
+      node = q.shift
+      yield node if node.data != nil
+      q << node.left if node.left != nil
+      q << node.right if node.right != nil
+    end
   end
 
-  def yield_recursive(node, parent_node, &block)
-    yield node 
-    yield_recursive(node.left, node, &block) if node.left != nil
-    yield_recursive(node.right, node, &block) if node.right != nil
+  def preorder(&block)
+     root_first(@root, &block)   
   end
 
+  def inorder(&block)
+     left_first(@root, &block)   
+  end
+
+  def postorder(&block)
+     right_first(@root, &block)   
+  end
+
+  def root_first(node, &block)
+    if node != nil
+      yield node
+      root_first(node.left, &block)
+    end
+    root_first(node.right, &block) if node != nil
+  end
+
+  def left_first(node, &block)
+    if node != nil
+      left_first(node.left, &block) if node.left != nil
+      yield node
+      left_first(node.right, &block) if node.right != nil
+    end
+  end
+  
+  def right_first(node, &block)
+    if node != nil
+      right_first(node.right, &block) if node.right != nil
+      yield node
+      right_first(node.left, &block) if node.left != nil
+    end
+  end
+
+  def height(node = @root)
+    @hmax = 0
+    find_leaf(node, 0)
+  end
+
+  def find_leaf(node, h)
+    #puts "#{@hmax} : #{h}"
+    if node != nil
+      if node.left != nil
+        h += 1
+        @hmax = h if h >= @hmax
+        find_leaf(node.left, h) 
+        h -= 1
+      end
+      if node.right != nil
+        h += 1
+        @hmax = h if h >= @hmax
+        find_leaf(node.right, h) 
+        h -= 1
+      end
+    end
+    @hmax
+  end
+
+  def depth(node = @root)
+    @dmax = 0
+    find_node(node, 0)
+  end
+
+  def find_node(node, d)
+    puts "#{@dmax} : #{d}"
+    if node != nil
+      if node.left != nil
+        d += 1
+        @hmax = h if h >= @hmax
+        find_leaf(node.left, h) 
+        d -= 1
+      end
+      if node.right != nil
+        h += 1
+        @hmax = h if h >= @hmax
+        find_leaf(node.right, h) 
+        h -= 1
+      end
+    end
+    @hmax
+  end
+  
 end
 
 mytree = Tree.new([1, 7, 4, 23, 8, 9, 4, 3, 5, 7, 9, 67, 6345, 324, 72, 58, 2486, 01, 87, 59, 22, 63, 98])
 mytree.pretty_print
 
-mytree.insert(12)
-mytree.pretty_print
+#mytree.insert(12)
+#mytree.pretty_print
 
-mytree.delete(58)
-mytree.pretty_print
+#mytree.delete(58)
+#mytree.pretty_print
 
-p mytree.find(67)
+#p mytree.find(67)
 
-mytree.level_order{ |node| p node.data }
+#mytree.level_order{ |node| p node.data }
+#mytree.preorder{ |node| p node.data }
+#mytree.inorder{ |node| p node.data }
+#mytree.postorder{ |node| p node.data }
+
+p mytree.height
