@@ -268,7 +268,7 @@ end
 #mytree = Tree.new([1, 7, 4, 23, 8, 9, 4, 3, 5, 7, 9, 67, 6345, 324, 72, 58, 2486, 01, 87, 59, 22, 63, 98])
 #mytree.pretty_print
 
-myrndtree = Tree.new((Array.new(15) { rand(1..100) }))
+myrndtree = Tree.new((Array.new(20) { rand(1..100) }))
 myrndtree.pretty_print
 
 p myrndtree.balanced?
@@ -280,3 +280,11 @@ puts "=== PREORDER ==="
 myrndtree.inorder{ |node| print " > #{node.data}"}
 puts "=== POSTORDER ==="
 myrndtree.postorder{ |node| print " > #{node.data}"}
+
+myrndtree.insert(131)
+myrndtree.insert(152)
+p myrndtree.balanced?
+myrndtree.pretty_print
+myrndtree.rebalance
+p myrndtree.balanced?
+myrndtree.pretty_print
