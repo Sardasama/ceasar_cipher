@@ -207,46 +207,76 @@ class Tree
     @hmax
   end
 
-  def depth(node = @root)
-    @dmax = 0
-    find_node(node, 0)
+  def depth(value)
+    @depth = -1
+    @true_depth = nil
+    find_node(value, @root)
   end
 
-  def find_node(node, d)
-    puts "#{@dmax} : #{d}"
-    if node != nil
-      if node.left != nil
-        d += 1
-        @hmax = h if h >= @hmax
-        find_leaf(node.left, h) 
-        d -= 1
-      end
-      if node.right != nil
-        h += 1
-        @hmax = h if h >= @hmax
-        find_leaf(node.right, h) 
-        h -= 1
+  def find_node(value, node)
+    @depth += 1
+    if @true_depth == nil
+      puts "Node : #{node.data} Depth = #{@depth}"
+      if node.data == value
+        @true_depth = @depth
+        return @depth
+      else
+        if node.left != nil
+          find_node(value, node.left)
+          @depth -= 1
+        end
+        if node.right != nil
+          find_node(value, node.right) 
+          @depth -= 1
+        end
       end
     end
-    @hmax
+    @true_depth
   end
-  
+
+  def balanced?(node = @root)
+    if node.left == nil && node.right == nil
+      return true
+    elsif node.left == nil  && node.right != nil
+      if node.right.left != nil || node.right.right != nil
+        return false 
+      else
+        return true
+      end
+    elsif node.right == nil  && node.left != nil
+      if node.left.left != nil || node.left.right != nil    
+        return false 
+      else
+        return true
+      end
+    elsif (height(node.left) - height(node.right)).between?(-1,1)
+      balanced?(node.left)
+      balanced?(node.right)
+    else
+      return false
+    end
+  end
+
+  def rebalance
+    new_arr = []
+    preorder { |node| new_arr << node.data}
+    build_tree(new_arr)
+    new_arr
+  end
 end
 
-mytree = Tree.new([1, 7, 4, 23, 8, 9, 4, 3, 5, 7, 9, 67, 6345, 324, 72, 58, 2486, 01, 87, 59, 22, 63, 98])
-mytree.pretty_print
-
-#mytree.insert(12)
+#mytree = Tree.new([1, 7, 4, 23, 8, 9, 4, 3, 5, 7, 9, 67, 6345, 324, 72, 58, 2486, 01, 87, 59, 22, 63, 98])
 #mytree.pretty_print
 
-#mytree.delete(58)
-#mytree.pretty_print
+myrndtree = Tree.new((Array.new(15) { rand(1..100) }))
+myrndtree.pretty_print
 
-#p mytree.find(67)
-
-#mytree.level_order{ |node| p node.data }
-#mytree.preorder{ |node| p node.data }
-#mytree.inorder{ |node| p node.data }
-#mytree.postorder{ |node| p node.data }
-
-p mytree.height
+p myrndtree.balanced?
+puts "=== LVLORDER ==="
+myrndtree.level_order{ |node| print " > #{node.data}"}
+puts "=== PREORDER ==="
+myrndtree.preorder{ |node| print " > #{node.data}"}
+puts "=== PREORDER ==="
+myrndtree.inorder{ |node| print " > #{node.data}"}
+puts "=== POSTORDER ==="
+myrndtree.postorder{ |node| print " > #{node.data}"}
